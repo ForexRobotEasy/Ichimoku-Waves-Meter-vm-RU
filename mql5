@@ -1,0 +1,74 @@
+
+//+------------------------------------------------------------------+
+//|                                                     Ichimoku Waves Meter vm RU |
+//|                            Copyright © 2022, Forex Robot Easy Team |
+//|                                          https://www.forexroboteasy.com |
+//+------------------------------------------------------------------+
+
+//--- External parameters
+extern int WavesPeriod = 26;          // Period for calculating waves
+extern double PriceScale = 1.0;       // Scale factor for price waves
+
+//--- Global variables
+double WavesData[];
+
+//+------------------------------------------------------------------+
+//| Custom indicator initialization function                         |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+    //--- Indicator buffers mapping
+    SetIndexBuffer(0, WavesData, INDICATOR_DATA);
+
+    //--- Set indicator short name
+    IndicatorSetString(INDICATOR_SHORTNAME, 'Ichimoku Waves Meter vm RU');
+
+    //--- Set indicator display levels
+    IndicatorSetInteger(INDICATOR_DIGITS, 2);
+
+    //--- Set indicator label
+    string label = 'Ichimoku Waves Meter vm RU (' + WavesPeriod + ')';
+    IndicatorSetString(INDICATOR_LEVELS, label);
+
+    return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Custom indicator iteration function                              |
+//+------------------------------------------------------------------+
+int OnCalculate(const int rates_total,
+                const int prev_calculated,
+                const datetime &time[],
+                const double &open[],
+                const double &high[],
+                const double &low[],
+                const double &close[],
+                const long &tick_volume[],
+                const long &volume[],
+                const int &spread[])
+{
+    //--- Check for the first run
+    if (prev_calculated == 0)
+    {
+        //--- Initialize WavesData buffer with 0 values
+        ArrayInitialize(WavesData, 0.0);
+    }
+
+    //--- Calculate waves
+    for (int i = WavesPeriod; i < rates_total; i++)
+    {
+        double wave = 0.0;
+
+        //--- Calculate wave based on high and low prices
+        for (int j = i - WavesPeriod; j < i; j++)
+        {
+            wave += (high[j] - low[j]) * PriceScale;
+        }
+
+        //--- Store wave value in the WavesData buffer
+        WavesData[i] = wave;
+    }
+
+    //--- Return that the calculation is done
+    return(rates_total);
+}
